@@ -1,58 +1,39 @@
-import { useEffect, useState } from 'react';
-import FormWithInput from './components/FormWithInput.tsx';
 import ListContainer from './components/ListContainer.tsx';
-import ListItem from './components/ListItem.tsx';
-import HttpClient from './utils/HttpClient.ts';
-import type { User, UserResponse } from './types/User.type.ts';
+import type { User,} from './types/User.type.ts';
 import UserItem from './components/UserItem.tsx';
+import useGetUsers from './hooks/useGetUsers.ts';
+import AddEditForm from './components/AddEditForm.tsx';
+import useCreateEditUser from './hooks/useCreateEditUser.ts';
 
 
-const httpClient = new HttpClient();
 
 function App() {
-  const [list, setList]= useState<User[]>([]);
-  const handleOnSubmit = (value: string) => {
-    //setList([
-    // ...list,
-    //  value
-    //])
+  const {users, addUserToList, isLoading: isFetchingUsers} = useGetUsers();
+  const {createUser, isLoading: isSubmitLoading} = useCreateEditUser();
+  const handleOnSubmit = async (user: User) => {
+   const newUser = await createUser({
+    user: {
+      ...user,
+      created: new Date()
+    }
+   });
+   if(newUser){
+    addUserToList(newUser.user)
+   }
   };
-
-  useEffect(()=>{
-    httpClient.get('users/all').then((response) =>{
-      response.json().then((data: UserResponse) => {
-        console.log('usuarios:',data)
-        setList(data.users);
-      }).catch((error) =>{
-        setList([]);
-        console.error('Error while parsing users/all',error)
-      })
-    }).catch((error) =>{
-      setList([]);
-      console.error('Fail fetching users/all',error)
-    })
-  }, []);
 
   return(
      <div>
       <h1>Todo list</h1>
-      <FormWithInput
-      id='add'
-      buttonText='Agregar'
-      placeholder='Ingrese una tarea...'
-      onSubmit={handleOnSubmit}
-      />
-      <FormWithInput
-      id='search'
-      buttonText='Buscar'
-      placeholder='Buscar en mis tareas'
-      onSubmit={handleOnSubmit}
-      />
-      <ListContainer>
-        {list.map((item)=>{ 
-            return <UserItem key={item.id} user={item} />
-          })}        
-      </ListContainer>
+      <AddEditForm onSubmit={handleOnSubmit} loading={isSubmitLoading}/>
+      {isFetchingUsers && <p>Loading...</p>}
+      {!isFetchingUsers &&(
+        <ListContainer>
+          {users.map((user)=>{ 
+              return <UserItem key={user.id} user={user} />
+            })}        
+        </ListContainer>
+      )}
     </div>
   );
 }
