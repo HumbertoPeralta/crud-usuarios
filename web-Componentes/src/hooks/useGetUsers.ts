@@ -5,38 +5,58 @@ import HttpClient from "../utils/HttpClient";
 const httpClient = new HttpClient();
 
 const useGetUsers = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const getUsers = () => {
-        setIsLoading(true);
-        httpClient.get('users/all').then((response) =>{
-          response.json().then((data: UserResponse) => {
-            console.log('usuarios:',data)
-            setUsers(data.users);
-          }).catch((error) =>{
-            setUsers([]);
-            console.error('Error while parsing users/all',error)
-          }).finally(()=>{
-          setIsLoading(false);
-        })
-        }).catch((error) =>{
-          setUsers([]);
-          console.error('Fail fetching users/all',error)
-        })
-    }
-    const addUserToList = (user: User) => {
-      setUsers((prev)=> [...prev,user]);
-    }
-    useEffect(()=>{
-        getUsers();
-      }, []);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-    return{
-        users,
-        getUsers,
-        addUserToList,
-        isLoading
-    };
+  const getUsers = () => {
+    setIsLoading(true);
+    httpClient
+      .get("users/all")
+      .then((response) => {
+        response
+          .json()
+          .then((data: UserResponse) => {
+            setUsers(data.users);
+          })
+          .catch((error) => {
+            console.error("Error while parsing users/all", error);
+            setUsers([]);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      })
+      .catch((error) => {
+        console.error("Fail fetching users/all", error);
+        setUsers([]);
+      });
+  };
+
+  // 👉 AGREGAR ESTO
+  const addUserToList = (user: User) => {
+    setUsers((prev) => [...prev, user]);
+  };
+
+  const updateUserInList = (updatedUser: User) => {
+    setUsers(prev => prev.map(u => (u.id === updatedUser.id ? updatedUser : u)));
+  };
+
+  const deleteUserFromList = (id: number) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+  };
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  return {
+    users,
+    getUsers,
+    addUserToList,
+    updateUserInList,
+    deleteUserFromList,
+    isLoading,
+  };
 };
 
 export default useGetUsers;
