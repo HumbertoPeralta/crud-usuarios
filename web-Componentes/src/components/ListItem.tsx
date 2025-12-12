@@ -1,5 +1,15 @@
-function ListItem(){
-
+type ListItemProps = {
+    children?: React.ReactNode
 }
 
-export default ListItem
+function ListItem({
+    children,
+}:ListItemProps){
+    return(
+        <li>
+            {children}
+        </li>
+    );
+}
+
+export default ListItem;

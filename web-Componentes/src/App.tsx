@@ -1,55 +1,57 @@
+import { useEffect, useState } from 'react';
+import FormWithInput from './components/FormWithInput.tsx';
 import ListContainer from './components/ListContainer.tsx';
-import UserItem from "./components/UserItem.tsx";
-import useGetUsers from "./hooks/useGetUsers.ts";
-import addEditForm from "./components/AddEditForm.tsx";
-import type {User} from "./types/User.type.ts";
-import useCreateEditUser from "./hooks/useCreatedEditUser.ts";
+import ListItem from './components/ListItem.tsx';
+import HttpClient from './utils/HttpClient.ts';
+import type { User, UserResponse } from './types/User.type.ts';
+import UserItem from './components/UserItem.tsx';
+
+
+const httpClient = new HttpClient();
 
 function App() {
-  const [list, setList]= useState<string[]>([]);
+  const [list, setList]= useState<User[]>([]);
   const handleOnSubmit = (value: string) => {
-    setList([
-      ...list,
-      value
-    ])
-  }
-  const handleOnSearchSubmit = (value: string) => {
-    console.log(
-      list.find(e => e === value)
-    );
-  }
-  fetch('http://localhost:3000/ap/users/all'.{
-    method: 'GET',
-    headers: {
-      'Content-Type' : 'application/json',
-      'Acept': 'aplication/json'
-    }
-  })
+    //setList([
+    // ...list,
+    //  value
+    //])
+  };
+
+  useEffect(()=>{
+    httpClient.get('users/all').then((response) =>{
+      response.json().then((data: UserResponse) => {
+        console.log('usuarios:',data)
+        setList(data.users);
+      }).catch((error) =>{
+        setList([]);
+        console.error('Error while parsing users/all',error)
+      })
+    }).catch((error) =>{
+      setList([]);
+      console.error('Fail fetching users/all',error)
+    })
+  }, []);
+
   return(
      <div>
       <h1>Todo list</h1>
-      <FormWhitInput
+      <FormWithInput
       id='add'
       buttonText='Agregar'
       placeholder='Ingrese una tarea...'
       onSubmit={handleOnSubmit}
       />
-      <FormWhitInput
+      <FormWithInput
       id='search'
       buttonText='Buscar'
       placeholder='Buscar en mis tareas'
-      onSubmit={handleOnSearchSubmit}
+      onSubmit={handleOnSubmit}
       />
       <ListContainer>
-        {
-          list.map((item,index)=>{
-            return(
-              <ListItem key={index}>
-                {item}
-              </ListItem>
-            )
-          })
-        }        
+        {list.map((item)=>{ 
+            return <UserItem key={item.id} user={item} />
+          })}        
       </ListContainer>
     </div>
   );

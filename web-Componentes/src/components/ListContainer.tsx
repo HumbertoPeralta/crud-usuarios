@@ -1,5 +1,15 @@
-function ListContainer(){
-
+type ListContainerProps = {
+    children?: React.ReactNode
 }
 
-export default ListContainer
+function ListContainer({
+    children,
+}:ListContainerProps){
+    return(
+        <li>
+            {children}
+        </li>
+    );
+}
+
+export default ListContainer;
